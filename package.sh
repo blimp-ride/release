@@ -72,32 +72,34 @@ git-stuff() {
     gh release create --notes "${release_notes}" "${version}" "${release_files[@]}"
 }
 
-# Options
-if [ "${1}" = '--version' ]; then
-  if [ $# -ne 3 ]; then
+release() {
+  # Options
+  if [ "${1}" = '--version' ]; then
+    if [ $# -ne 3 ]; then
+      usage
+      exit 1
+    fi
+    version="${2}"
+    validate-semver "${version}" || exit 1
+    shift 2
+  elif [ "${1:0:10}" == '--version=' ]; then
+    version="${1:10}"
+    validate-semver "${version}" || exit 1
+  else
+    git_version="$(git-get-latest-version)"
+    version="$(bump-patch "${git_version}")"
+    if [ $? -ne 0 ] || [ -z "${version}" ]; then
+      echo "Could not bump patch from git version [${git_version}]" >&2
+      exit 1
+    fi
+  fi
+  release_notes="${1}"
+  if [ -z "${release_notes}" ]; then
+    echo "Release notes cannot be empty!" >&2
     usage
     exit 1
   fi
-  version="${2}"
-  validate-semver "${version}" || exit 1
-  shift 2
-elif [ "${1:0:10}" == '--version=' ]; then
-  version="${1:10}"
-  validate-semver "${version}" || exit 1
-else
-  git_version="$(git-get-latest-version)"
-  version="$(bump-patch "${git_version}")"
-  if [ $? -ne 0 ] || [ -z "${version}" ]; then
-    echo "Could not bump patch from git version [${git_version}]" >&2
-    exit 1
-  fi
-fi
-release_notes="${1}"
-if [ -z "${release_notes}" ]; then
-  echo "Release notes cannot be empty!" >&2
-  usage
-  exit 1
-fi
 
-# Main
-git-stuff
+  # Main
+  git-stuff
+}
