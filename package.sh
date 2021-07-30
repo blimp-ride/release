@@ -2,11 +2,11 @@
 
 #=import semver
 
-_CMD_GREP='/bin/grep'
+CMD_GREP='/bin/grep'
 if [ 'Darwin' = "$(uname)" ]; then
   type ggrep >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-    _CMD_GREP="$(which ggrep)"
+    CMD_GREP="$(which ggrep)"
   else
     error "Must install GNU grep with 'brew install grep'"
     exit 1
@@ -42,7 +42,7 @@ validate-semver() {
   fi
 
   local sv="${1}"
-  gv="$(echo "${sv}" | "${_CMD_GREP}" -P '^[0-9]+\.[0-9]+\.[0-9]+$')"
+  gv="$(echo "${sv}" | "${CMD_GREP}" -P '^[0-9]+\.[0-9]+\.[0-9]+$')"
   if ! [ "${gv}" = "${sv}" ]; then
     echo "Version [${sv}] is not a semantic version!" >&2
     return 255
@@ -103,3 +103,4 @@ release() {
   # Main
   git-stuff
 }
+
